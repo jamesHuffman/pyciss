@@ -1,5 +1,5 @@
 """This module is making use of the
-`OPUS API <http://pds-rings-tools.seti.org/opus/api/>`_ to create web request
+`OPUS API <http://pds-rings-tools.seti.org/opus/api/>`_ to create web requests
 for OPUS data, metadata, and preview images.
 """
 from __future__ import division, print_function
@@ -84,7 +84,7 @@ class MetaData(object):
         return self.mission['cassini_target_name']
 
 
-def get_dataframe_from_meta_dic(meta, attr_name):
+def _get_dataframe_from_meta_dic(meta, attr_name):
     d = getattr(meta, attr_name)
     df = pd.DataFrame({k: [v] for (k, v) in d.items()})
     df.index = [meta.img_id]
@@ -126,7 +126,7 @@ class OPUSObsID(object):
         except KeyError:
             self.calib = None
 
-    def get_img_url(self, size):
+    def _get_img_url(self, size):
         base = self.raw.label_url[:-4].replace('volumes', 'browse')
         return "{}_{}.jpg".format(base, size)
 
@@ -150,19 +150,19 @@ class OPUSObsID(object):
 
     @property
     def small_img_url(self):
-        return self.get_img_url('small')
+        return self._get_img_url('small')
 
     @property
     def medium_img_url(self):
-        return self.get_img_url('med')
+        return self._get_img_url('med')
 
     @property
     def thumb_img_url(self):
-        return self.get_img_url('thumb')
+        return self._get_img_url('thumb')
 
     @property
     def full_img_url(self):
-        return self.get_img_url('full')
+        return self._get_img_url('full')
 
     def get_meta_data(self):
         return MetaData(self.img_id)
@@ -254,7 +254,7 @@ class OPUS(object):
                        limit=1000)
         return myquery
 
-    def get_time_query(self, t1, t2):
+    def _get_time_query(self, t1, t2):
         myquery = dict(instrumentid='Cassini+ISS',
                        timesec1=t1, timesec2=t2)
         return myquery
@@ -285,7 +285,7 @@ class OPUS(object):
         except AttributeError:
             # if not, should already be a string, so do nothing.
             pass
-        myquery = self.get_time_query(t1, t2)
+        myquery = self._get_time_query(t1, t2)
         if target is not None:
             myquery['target'] = target
         self.create_files_request(myquery, fmt='json')
@@ -310,7 +310,7 @@ class OPUS(object):
         except KeyError:
             print("Allowed keys:", d.keys())
             return
-        img_urls = [i.get_img_url(size) for i in self.obsids]
+        img_urls = [i._get_img_url(size) for i in self.obsids]
         imagesList = ''.join(["<img style='width: {0}px; margin: 0px; float: "
                               "left; border: 1px solid black;' "
                               "src='{1}' />"
@@ -340,7 +340,9 @@ class OPUS(object):
             for url in to_download:
                 basename = Path(url).name
                 print("Downloading", basename)
-                urlretrieve(url, str(pm.basepath / basename))
+                store_path = str(pm.basepath / basename)
+                urlretrieve(url, store_path)
+            return str(pm.basepath)
 
     def download_previews(self, savedir=None):
         """Download preview files for the previously found and stored Opus obsids.
@@ -359,22 +361,22 @@ class OPUS(object):
             urlretrieve(obsid.medium_img_url, str(pm.basepath / basename))
 
 
-def download_and_calibrate(img_id, map_project=True):
+def download_and_calibrate(img_id, map_project=True, overwrite=False):
     opus = OPUS()
     opus.query_image_id(img_id)
-    
+
     # now you need a PathManager object that knows where your data is
     pm = io.PathManager(img_id)
 
     # if raw_image exists skip downloading
     # if query returned satisfying results.
     # Mostly will be 4 results, label + image for raw data, and label+image for calibrated image
-    
+
     if not pm.raw_image.exists():
         opus.download_results()
-    
+
     # and then you start the calibration pipeline, starting from the label
     # file which points to the image data, ISIS will find it:
     # if cube file exists skip calibration
-    if not pm.cubepath.exists():
+    if not pm.cubepath.exists() or overwrite is True:
         pipeline.calibrate_ciss(pm.raw_label, map_project=map_project)

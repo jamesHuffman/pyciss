@@ -19,13 +19,15 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name=DISTNAME,
-    version="0.6.0",
+    version="0.6.4",
     packages=find_packages(),
 
-    install_requires=['pandas'],
+    install_requires=['pandas', 'numpy', 'matplotlib', 'pysis'],
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
 
     package_data={
-        'pyciss': ['data/*', 'config.ini']
+        'pyciss': ['data/*']
     },
 
     # metadata
