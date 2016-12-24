@@ -40,7 +40,6 @@ def calib_to_isis(pm_or_path):
 def calibrate_ciss(img_name, ringdata=True, map_project=True, do_dstripe=True):
     """
     Calibrate raw Cassini ISS images using ISIS.
-
     ISIS is using an official released version the calibration routine `cisscal`
     that is being developed under IDL, but has been converted to C++ for ISIS.
     I am using the pipeline as described here:
@@ -48,7 +47,6 @@ def calibrate_ciss(img_name, ringdata=True, map_project=True, do_dstripe=True):
     It is customary to indicate the pipeline of ISIS apps that a file went through
     with a chain of extensions, e.g. '.cal.dst.map.cub', indicating calibration, destriping,
     and map projection.
-
     Parameters
     ----------
     img_name : io.PathManager, pathlib.Path, str
@@ -56,7 +54,6 @@ def calibrate_ciss(img_name, ringdata=True, map_project=True, do_dstripe=True):
         If img_name has no attribute `raw_label`, I try to initialize a PathManager
         with `img_name` to see if I have received an image_id string here.
         Last thing I try is just a path.
-
     Returns
     -------
     str : absolute path to map-projected ISIS cube.
@@ -108,7 +105,7 @@ def calibrate_ciss(img_name, ringdata=True, map_project=True, do_dstripe=True):
         next_ = dst_name
     else:
         next_ = cal_name
-        map_name = file_variations(img_name,['.cal.map.cub'])
+        map_name = '.cal.map.cub'
     if map_project:
         ringscam2map(from_=next_, to=map_name, defaultrange='Camera',
                      map=ISISDATA / 'base/templates/maps/ringcylindrical.map')
