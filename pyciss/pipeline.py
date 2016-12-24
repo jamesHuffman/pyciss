@@ -108,7 +108,7 @@ def calibrate_ciss(img_name, ringdata=True, map_project=True, do_dstripe=True):
         next_ = dst_name
     else:
         next_ = cal_name
-        map_name = img_name+'.cal.map.cub'
+        map_name = file_variations(img_name,['.cal.map.cub'])
     if map_project:
         ringscam2map(from_=next_, to=map_name, defaultrange='Camera',
                      map=ISISDATA / 'base/templates/maps/ringcylindrical.map')
