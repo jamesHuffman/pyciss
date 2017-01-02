@@ -117,7 +117,7 @@ def calibrate_ciss(img_name, ringdata=True, map_project=True, do_dstripe=True):
     else:
         next_ = cal_name
         (map_name,) = file_variations(img_name,['.cal.map.cub'])
-        logging.info('Destriping skipped.')
+        logger.info('Destriping skipped.')
 
     # map projection
     if map_project:
